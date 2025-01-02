@@ -1,0 +1,24 @@
+## pihole.ingress.yml
+---
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  namespace: pihole
+  name: pihole-ingress
+  annotations:
+    kubernetes.io/ingress.class: "traefik"
+spec:
+  rules:
+  - host: rpi.home
+    http:
+      paths:
+        - path: /
+          pathType: Prefix
+          backend:
+            service:
+              name: pihole-tcp
+              port:
+                number: 80
+#              name: dnsudp
+#              port:
+#                number: 53

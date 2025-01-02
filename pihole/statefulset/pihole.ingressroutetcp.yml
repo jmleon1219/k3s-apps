@@ -1,0 +1,20 @@
+## pihole.ingressroutetcp.yml
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteTCP
+metadata:
+  namespace: pihole
+  name: pihole-ingress-dns-tcp
+spec:
+   entryPoints:
+     - dnstcp
+   routes:
+   - match: HostSNI('rpi.home')
+     priority: 10
+     services:
+       - name: pihole-dns-tcp
+         port: 53
+#
+#              name: dnsudp
+#              port:
+#                number: 53

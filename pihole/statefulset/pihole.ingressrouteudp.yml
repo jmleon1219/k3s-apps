@@ -1,0 +1,15 @@
+## pihole.ingressrouteudp.yml
+---
+apiVersion: traefik.io/v1alpha1
+kind: IngressRouteUDP
+metadata:
+  namespace: pihole
+  name: pihole-ingress-dns-udp
+spec:
+   entryPoints:
+      - dns
+   routes:
+     - services:
+        - name: pihole-udp
+          port: 53
+          weight: 10

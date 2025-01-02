@@ -1,0 +1,42 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: pihole-set
+spec:
+  selector:
+     matchLabels:
+       app: pihole
+  serviceName: "pihole"
+  replicas: 1
+  template:
+    metadata:
+     labels:
+        app: pihole
+    spec:
+      terminationGracePeriodSeconds: 10
+      containers:
+      - name: pihole
+        image: docker.io/pihole/pihole:latest
+        ports:
+        - containerPort: 80
+          name: http-web-svc
+        - containerPort: 53
+          name: dns-svc
+          protocol: TCP
+        - containerPort: 53
+          name: dns-udp
+          protocol: UDP
+        volumeMounts:
+         - name: pihole-etc
+           mountPath: /etc/pihole
+#        env:
+#         - name: FTLCONF_LOCAL_IPV4
+#           value: 192.168.1.39
+  volumeClaimTemplates:
+  - metadata:
+      name: pihole-etc
+    spec:
+      accessModes: ["ReadWriteOnce"]
+      resources:
+        requests:
+          storage: 500Mi

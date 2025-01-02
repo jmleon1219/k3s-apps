@@ -1,0 +1,15 @@
+apiVersion: v1
+kind: Pod
+metadata:
+  name: pihole-pod
+  labels:
+    app.kubernetes.io/name: pihole
+spec:
+  containers:
+  - name: pihole-latest
+    image: docker.io/pihole/pihole:latest
+    ports:
+    - containerPort: 80
+      name: http-web-svc
+    - containerPort: 53
+      name: dns-svc
