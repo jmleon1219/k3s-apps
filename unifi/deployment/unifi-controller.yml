@@ -16,7 +16,7 @@ spec:
     spec:
       containers:
         - name: unifi
-          image: jacobalberty/unifi:v9.0.114
+          image: jacobalberty/unifi:v9.1
           ports:
             - containerPort: 8080
               name: http
@@ -65,7 +65,7 @@ metadata:
   name: unifi
 spec:
   type: LoadBalancer
-  loadBalancerIP: 192.168.1.7
+  loadBalancerIP: 192.168.1.6
   selector:
     app: unifi
   ports:
