@@ -1,0 +1,79 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: airflow-webserver
+  namespace: airflow
+  labels:
+    app: airflow
+    component: webserver
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: airflow
+      component: webserver
+  template:
+    metadata:
+      labels:
+        app: airflow
+        component: webserver
+    spec:
+      containers:
+      - name: webserver
+        image: apache/airflow:2.9.3
+        command: ["airflow", "webserver"]
+        env:
+        - name: AIRFLOW__WEBSERVER__SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: airflow-secret
+              key: webserver-secret-key
+        - name: GUNICORN_CMD_ARGS
+          value: "--workers 1 --timeout 600 --threads 1 --max-requests 50 --worker-tmp-dir /dev/shm"
+        volumeMounts:
+        - name: config
+          mountPath: /opt/airflow/airflow.cfg
+          subPath: airflow.cfg
+        - name: logs
+          mountPath: /airflow/logs
+        resources:
+          limits:
+            cpu: "1000m" # Increased for stability
+            memory: "2Gi" # Increased to prevent edge cases
+          requests:
+            cpu: "100m"
+            memory: "512Mi"
+        readinessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 180 # Increased for slow startup
+          periodSeconds: 30
+          failureThreshold: 5
+        livenessProbe:
+          httpGet:
+            path: /health
+            port: 8080
+          initialDelaySeconds: 240 # Increased for slow startup
+          periodSeconds: 30
+          failureThreshold: 3
+      volumes:
+      - name: config
+        configMap:
+          name: airflow-config
+      - name: logs
+        persistentVolumeClaim:
+          claimName: airflow-logs
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: kubernetes.io/hostname
+                operator: NotIn
+                values:
+                - k3swrk3
+      tolerations:
+      - key: "low-memory"
+        operator: "Exists"
+        effect: "NoSchedule"
