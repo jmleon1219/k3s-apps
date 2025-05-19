@@ -18,6 +18,8 @@ spec:
         app: airflow
         component: webserver
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k3swrk2
       containers:
       - name: webserver
         image: apache/airflow:2.9.3
@@ -36,10 +38,12 @@ spec:
           subPath: airflow.cfg
         - name: logs
           mountPath: /airflow/logs
+        - name: dags
+          mountPath: /opt/airflow/dags
         resources:
           limits:
-            cpu: "1000m" # Increased for stability
-            memory: "2Gi" # Increased to prevent edge cases
+            cpu: "1000m"
+            memory: "2Gi"
           requests:
             cpu: "100m"
             memory: "512Mi"
@@ -47,14 +51,14 @@ spec:
           httpGet:
             path: /health
             port: 8080
-          initialDelaySeconds: 180 # Increased for slow startup
+          initialDelaySeconds: 180
           periodSeconds: 30
           failureThreshold: 5
         livenessProbe:
           httpGet:
             path: /health
             port: 8080
-          initialDelaySeconds: 240 # Increased for slow startup
+          initialDelaySeconds: 240
           periodSeconds: 30
           failureThreshold: 3
       volumes:
@@ -64,15 +68,9 @@ spec:
       - name: logs
         persistentVolumeClaim:
           claimName: airflow-logs
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-                - k3swrk3
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags
       tolerations:
       - key: "low-memory"
         operator: "Exists"

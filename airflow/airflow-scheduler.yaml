@@ -18,6 +18,8 @@ spec:
         app: airflow
         component: scheduler
     spec:
+      nodeSelector:
+        kubernetes.io/hostname: k3swrk2
       containers:
       - name: scheduler
         image: apache/airflow:2.9.3
@@ -28,13 +30,15 @@ spec:
           subPath: airflow.cfg
         - name: logs
           mountPath: /airflow/logs
+        - name: dags
+          mountPath: /opt/airflow/dags
         resources:
           limits:
             cpu: "400m"
-            memory: "700Mi" # Increased for db init
+            memory: "700Mi"
           requests:
             cpu: "100m"
-            memory: "384Mi" # Increased
+            memory: "384Mi"
       volumes:
       - name: config
         configMap:
@@ -42,15 +46,9 @@ spec:
       - name: logs
         persistentVolumeClaim:
           claimName: airflow-logs
-      affinity:
-        nodeAffinity:
-          requiredDuringSchedulingIgnoredDuringExecution:
-            nodeSelectorTerms:
-            - matchExpressions:
-              - key: kubernetes.io/hostname
-                operator: NotIn
-                values:
-                - k3swrk3 # Replace with Pi 3B hostname
+      - name: dags
+        persistentVolumeClaim:
+          claimName: airflow-dags
       tolerations:
       - key: "low-memory"
         operator: "Exists"
