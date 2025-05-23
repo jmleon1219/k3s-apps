@@ -20,3 +20,5 @@ data:
     worker_container_tag = 2.9.3
     worker_container_cpu_limit = 200m
     worker_container_memory_limit = 256Mi
+    [webserver]
+    web_server_master_timeout = 300
